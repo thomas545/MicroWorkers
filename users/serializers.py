@@ -161,7 +161,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if models.Profile.objects.filter(phone_number=data['phone_number']).exists():
             raise serializers.ValidationError(
-                _("Phone Number already used before.")
+                _("Phone Number already exists.")
             )
         return data
 

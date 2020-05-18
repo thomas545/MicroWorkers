@@ -20,7 +20,7 @@ from allauth.account.models import EmailAddress, EmailConfirmationHMAC
 from rest_auth.views import LoginView
 from rest_auth.registration.views import VerifyEmailView
 from rest_auth.views import LogoutView, PasswordChangeView, PasswordResetConfirmView
-from . import serializers, models
+from . import serializers, models, tasks
 
 User = get_user_model()
 
@@ -46,8 +46,7 @@ class UserRegisterView(RegisterView):
             self.token = jwt_encode(user)
         email = EmailAddress.objects.get(user=user, email=user.email)
         confirmation = EmailConfirmationHMAC(email)
-        print("key ->>>", confirmation.key)
-        # TODO send email confirmation here
+        tasks.send_confirmation_email.delay(user, confirmation.key)
         return user
 
 
@@ -115,17 +114,11 @@ class UserPasswordResetView(views.APIView):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise exceptions.NotAcceptable(_("please enter correct email."))
-        # TODO send email
-        from django.contrib.auth.tokens import default_token_generator
-        from django.utils.encoding import force_bytes
-        from django.utils.http import urlsafe_base64_encode
-
-        uid = urlsafe_base64_encode(force_bytes(user.pk))  # .decode('utf-8')
-        token = default_token_generator.make_token(user)
-        print("password/reset/confirm/" + uid + "/" + token)
+        
+        tasks.send_reset_password_email.delay(user)
         return Response(
-            {"detail": _("Password reset has been sent.")}, status=status.HTTP_200_OK
-        )
+            {"detail": _("Password reset has been sent.")}, 
+            status=status.HTTP_200_OK)
 
 
 class UserPasswordResetConfirmView(generics.GenericAPIView):
@@ -134,7 +127,7 @@ class UserPasswordResetConfirmView(generics.GenericAPIView):
 
     @sensitive_post_parameters_m
     def dispatch(self, *args, **kwargs):
-        return super(PasswordResetConfirmUserView, self).dispatch(*args, **kwargs)
+        return super(UserPasswordResetConfirmView, self).dispatch(*args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -159,15 +152,15 @@ class UserDetailsAPIView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
     def get_queryset(self):
-        return get_user_model().objects.none()
+        return User.objects.none()
+
 
 class ResendEmailConfirmation(views.APIView):
+    permission_classes = (permissions.AllowAny,)
+
     def post(self, request, *args, **kwargs):
-        email = get_object_or_404(EmailAddress, email=email)
-        confirmation = EmailConfirmationHMAC(email)
-        print("key ->>>", confirmation.key)
-        # TODO send email confirmation here
+        email = request.data.get("email", None)
+        email_address = get_object_or_404(EmailAddress, email=email)
+        confirmation = EmailConfirmationHMAC(email_address)
+        tasks.send_confirmation_email.delay(email_address.user, confirmation.key)
         return Response({"detail": _("Email Confirmation Sent.")})
-
-
-

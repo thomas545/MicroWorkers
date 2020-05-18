@@ -131,6 +131,8 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+CELERY_BROKER_URL = 'amqp://localhost'
+
 PHONENUMBER_DB_FORMAT = "INTERNATIONAL"
 PHONENUMBER_DEFAULT_REGION = "EG"
 
