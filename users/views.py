@@ -115,7 +115,7 @@ class UserPasswordResetView(views.APIView):
         except User.DoesNotExist:
             raise exceptions.NotAcceptable(_("please enter correct email."))
         
-        # tasks.send_reset_password_email.delay(user)
+        tasks.send_reset_password_email.delay(user)
         return Response(
             {"detail": _("Password reset has been sent.")}, 
             status=status.HTTP_200_OK)
