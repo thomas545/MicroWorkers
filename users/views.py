@@ -46,7 +46,7 @@ class UserRegisterView(RegisterView):
             self.token = jwt_encode(user)
         email = EmailAddress.objects.get(user=user, email=user.email)
         confirmation = EmailConfirmationHMAC(email)
-        tasks.send_confirmation_email.delay(user, confirmation.key)
+        tasks.send_confirmation_email.delay(user.username, user.email, confirmation.key)
         return user
 
 
@@ -115,7 +115,7 @@ class UserPasswordResetView(views.APIView):
         except User.DoesNotExist:
             raise exceptions.NotAcceptable(_("please enter correct email."))
         
-        tasks.send_reset_password_email.delay(user)
+        # tasks.send_reset_password_email.delay(user)
         return Response(
             {"detail": _("Password reset has been sent.")}, 
             status=status.HTTP_200_OK)
@@ -162,5 +162,6 @@ class ResendEmailConfirmation(views.APIView):
         email = request.data.get("email", None)
         email_address = get_object_or_404(EmailAddress, email=email)
         confirmation = EmailConfirmationHMAC(email_address)
-        tasks.send_confirmation_email.delay(email_address.user, confirmation.key)
+        tasks.send_confirmation_email.delay(email_address.user.username, 
+                                    email_address.email, confirmation.key)
         return Response({"detail": _("Email Confirmation Sent.")})

@@ -8,7 +8,7 @@ url = "http://localhost:4000/"
 
 
 @shared_task
-def send_confirmation_email(user, key):
+def send_confirmation_email(username, email, key):
     body = """
     Hello %s,
 
@@ -16,10 +16,10 @@ def send_confirmation_email(user, key):
     Link : %saccount-confirm-email/%s 
 
     Micoworkers Team 
-    """% (user.username, url, key)
+    """% (username, url, key)
 
     subject = "Confirmation Registeration"
-    recipients = [user.email]
+    recipients = [email]
     try:
         send_email(body, subject, recipients)
         return "Email Is Sent"
