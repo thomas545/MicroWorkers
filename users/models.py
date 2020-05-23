@@ -7,6 +7,7 @@ from django.core.validators import MaxLengthValidator
 from base.models import TimeStampedModel
 from phonenumber_field.modelfields import PhoneNumberField
 from base import choices
+from tasks.models import Category
 
 
 User = get_user_model()
@@ -68,6 +69,10 @@ class Profile(TimeStampedModel):
     accept_terms = models.BooleanField(default=False)
     is_tasker = models.BooleanField(default=False)
     # skills = models.ManyToManyField(Category)
+    # elite = models.BooleanField(default=False)
+    # great = models.BooleanField(default=False)
+    # our_fees = models.IntegerField(default=15)
+
 
     def __str__(self):
         return self.user.username
