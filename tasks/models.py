@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import activate, ugettext_lazy as _
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from base.models import TimeStampedModel
 from base.choices import TRANSPORTATION_CHOICES
@@ -12,10 +13,15 @@ def category_image_path(instance, filename):
     return f"categories/{instance.name}/{filename}"
 
 
+class CategoryManager(models.Manager):
+    pass
+
+
 class Category(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField()
-    image = models.ImageField(upload_to=category_image_path)
+    description = models.TextField(blank=True, null=True)
+    description_for_skill = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to=category_image_path, blank=True, null=True)
     parent = models.ForeignKey(
         "self", related_name="children", on_delete=models.CASCADE, blank=True, null=True
     )
@@ -38,9 +44,9 @@ class Task(TimeStampedModel):
     )
 
     SIZE_CHOICES = (
-        ("s", _("Small")),  # 1h
-        ("m", _("Medium")),  # 2-4hrs
-        ("l", _("Large")),  # 5-8hrs
+        ("s", _("Small")),
+        ("m", _("Medium")),
+        ("l", _("Large")),
     )
 
     task_poster = models.ForeignKey(
@@ -55,8 +61,12 @@ class Task(TimeStampedModel):
         max_length=1, choices=TRANSPORTATION_CHOICES, blank=True, null=True
     )
     size = models.CharField(max_length=1, choices=SIZE_CHOICES, default="s")
+    duration_time = models.IntegerField(validators=[MaxValueValidator(8)])
     status = models.CharField(max_length=1, choices=TASK_STATUS, default="p")
     start_time = models.DateTimeField(blank=True, null=True)
+    finished_time = models.DateTimeField(
+        blank=True, null=True
+    )  # determine when tasker finish task
     phone_number = PhoneNumberField(blank=True, null=True)
     location = models.ForeignKey(
         "users.Address",

@@ -39,6 +39,32 @@ class Address(TimeStampedModel):
         return f"Address ({self.id})"
 
 
+class Skill(models.Model):
+
+    EXPERIENCE_CHOICES = (
+        ("ne", _("No Experience")),
+        ("se", _("Some Experience")),
+        ("pt", _("I have had part-time experience")),
+        ("pe", _("I have had professional experience")),
+        ("ip", _("I'm professionally")),
+    )
+
+    tasker = models.ForeignKey(
+        User, related_name="user_skills", on_delete=models.CASCADE
+    )
+    skill = models.ForeignKey(Category, related_name="skill", on_delete=models.CASCADE)
+    is_qualified = models.BooleanField(default=False)
+    rate_per_hour = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    experience = models.CharField(
+        max_length=2, choices=EXPERIENCE_CHOICES, default="ne"
+    )
+    toolset = models.TextField(blank=True, null=True)
+    quick_summary = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.skill.name
+
+
 class Profile(TimeStampedModel):
     user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
     address = models.ForeignKey(
@@ -68,11 +94,9 @@ class Profile(TimeStampedModel):
     id_back_image = models.ImageField(upload_to=id_image_path, blank=True, null=True)
     accept_terms = models.BooleanField(default=False)
     is_tasker = models.BooleanField(default=False)
-    # skills = models.ManyToManyField(Category)
-    # elite = models.BooleanField(default=False)
-    # great = models.BooleanField(default=False)
-    # our_fees = models.IntegerField(default=15)
-
+    elite_tasker = models.BooleanField(default=False)
+    great_tasker = models.BooleanField(default=False)
+    our_fees = models.IntegerField(default=10)
 
     def __str__(self):
         return self.user.username

@@ -4,6 +4,6 @@ from .models import Category
 
 @register(Category)
 class CategoryTranslationOptions(TranslationOptions):
-    fields = ('name', 'description',)
+    fields = ('name', 'description', 'description_for_skill',)
     
 
