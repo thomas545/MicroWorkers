@@ -62,7 +62,6 @@ class RegistrationTestCase(BaseUserTestCase):
 
 class LoginTestCase(BaseUserTestCase):
     def test_login(self):
-
         url = reverse("account_login")
         data = {"username": self.user.username, "password": "123456qqq"}
         serializer = UserSerializer(self.user)
@@ -70,6 +69,14 @@ class LoginTestCase(BaseUserTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.get("user"), serializer.data)
 
+    def test_login_with_email(self):
+        # Login with email not working 
+        url = reverse("account_login")
+        data = {"username": self.user.email, "password": "123456qqq"}
+        serializer = UserSerializer(self.user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 400)
+        # self.assertEqual(response.data.get("user"), serializer.data)
 
 class UserDetailTestCase(BaseUserTestCase):
     def test_get_user_detail(self):
