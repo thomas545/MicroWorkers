@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     # Applications
     'users',
     'tasks',
-    'payment',
 
 ]
 
