@@ -20,15 +20,14 @@ schema_view = get_schema_view(
    permission_classes=(permissions.AllowAny,),
 )
 
-router = routers.DefaultRouter()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('', include(router.urls)),
     path('api/', include('rest_framework.urls')),
 
     path('', include('users.urls')),
+    path('', include('tasks.urls')),
 
     path('swagger-docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('yasg-docs/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

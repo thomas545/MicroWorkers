@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from django.db import models
 from django.shortcuts import get_object_or_404
 from django.utils.translation import activate, ugettext_lazy as _
@@ -22,7 +23,7 @@ class CategoryManager(models.Manager):
         return self.filter(parent__isnull=False)
 
     def get_children(self, pk=None, instance=None):
-        if instance and isinstance(instance, Category):
+        if instance and isinstance(instance, self.model):
             return instance.children.all()
         return get_object_or_404(self.model, pk=pk).children.all()
 
@@ -47,12 +48,16 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def childrens(self):
+        return self.children.all()
 
 class Task(TimeStampedModel):
     TASK_STATUS = (
         ("p", _("Pending")),
         ("a", _("active")),
         ("f", _("Finished")),
+        ("c", _("Canceled")),
     )
 
     SIZE_CHOICES = (
@@ -90,6 +95,10 @@ class Task(TimeStampedModel):
 
     def __str__(self):
         return self.title
+
+    @property
+    def end_time(self):
+        return self.start_time + timedelta(hours=float(self.duration_time))
 
 
 class TaskDeal(TimeStampedModel):
