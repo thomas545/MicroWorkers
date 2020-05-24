@@ -1,4 +1,5 @@
 from django.db import models
+from django.shortcuts import get_object_or_404
 from django.utils.translation import activate, ugettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator
@@ -14,7 +15,19 @@ def category_image_path(instance, filename):
 
 
 class CategoryManager(models.Manager):
-    pass
+    def roots(self):
+        return self.filter(parent__isnull=True)
+
+    def all_children(self):
+        return self.filter(parent__isnull=False)
+
+    def get_children(self, pk=None, instance=None):
+        if instance and isinstance(instance, Category):
+            return instance.children.all()
+        return get_object_or_404(self.model, pk=pk).children.all()
+
+    def roots_without_children(self):
+        return self.filter(children__isnull=False).distinct()
 
 
 class Category(models.Model):
@@ -26,14 +39,13 @@ class Category(models.Model):
         "self", related_name="children", on_delete=models.CASCADE, blank=True, null=True
     )
 
+    objects = CategoryManager()
+
     class Meta:
         verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name
-
-    def get_children(self):
-        return self.parent.all()
 
 
 class Task(TimeStampedModel):
