@@ -160,7 +160,6 @@ class UserSerializer(serializers.ModelSerializer):
     national_id = serializers.IntegerField(source="profile.national_id", required=False)
     id_front_image = Base64ImageField(required=False, source="profile.id_front_image")
     id_back_image = Base64ImageField(required=False, source="profile.id_back_image")
-    is_tasker = serializers.BooleanField(source="profile.is_tasker", required=False)
 
     class Meta:
         model = User
@@ -180,7 +179,6 @@ class UserSerializer(serializers.ModelSerializer):
             "national_id",
             "id_front_image",
             "id_back_image",
-            "is_tasker",
         )
         read_only_fields = ("username",)
 

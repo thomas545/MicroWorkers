@@ -102,10 +102,14 @@ class Task(TimeStampedModel):
 
 
 class TaskDeal(TimeStampedModel):
-    task = models.ForeignKey(Task, related_name="task", on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, related_name="task_deal", on_delete=models.CASCADE)
     tasker = models.ForeignKey(User, related_name="tasker", on_delete=models.CASCADE)
     is_accepted = models.NullBooleanField()
     reason = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"Deal ({self.id})"
+
+    @property
+    def expired(self):
+        return self.created + timedelta(hours=float(1)) < datetime.now(timezone.utc)
