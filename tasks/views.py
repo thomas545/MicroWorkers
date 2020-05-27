@@ -6,6 +6,7 @@ from rest_framework.viewsets import ViewSet, ModelViewSet
 from rest_framework.response import Response
 from rest_framework.exceptions import NotAcceptable, PermissionDenied, ValidationError
 from . import serializers, models
+from payment.models import Transaction
 
 
 class CategoryView(ModelViewSet):
@@ -18,22 +19,22 @@ class TaskViewSet(ModelViewSet):
     serializer_class = serializers.TaskSerializer
     permission_classes = (permissions.IsAuthenticated,)
     http_method_names = ["get", "put", "patch", "head", "options"]
-    queryset = models.Task.objects.select_related("task_poster", "category", "location")
-
+    queryset = models.Task.objects.select_related("client", "category", "location")
+# TODO all end point hatt3del
     def get_queryset(self):
         """
-        Get all tasks
+        Get all tasks for task poster (client)
         """
-        return models.Task.objects.filter(task_poster=self.request.user).select_related(
-            "task_poster", "category", "location"
+        return models.Task.objects.filter(client=self.request.user).select_related(
+            "client", "category", "location"
         )
 
     def retrieve(self, request, *args, **kwargs):
         """
-        Get a task 
+        Get a task detail for client
         """
         instance = self.get_object()
-        if request.user not in [instance.task_deal.tasker, instance.task_poster]:
+        if request.user not in [instance.task_deal.tasker, instance.client]:
             raise PermissionDenied(_("You don't own task."))
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
@@ -50,7 +51,7 @@ class TaskViewSet(ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         """
-         used to finish the task
+        Used to finish the task by tasker
         """
         task = self.get_object()
         self.validation(task, request)
@@ -68,7 +69,7 @@ class TaskDealViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """
-        create a task 
+        create a task by Client/task poster
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -95,12 +96,12 @@ class TaskDealViewSet(ModelViewSet):
         serializer = serializers.UpdateDealSerializer(deal, data=request.data)
         serializer.is_valid(raise_exception=True)
         if serializer.validated_data.get('is_accepted') == True:
-            # TODO create transaction and send notification congrats
+            Transaction.objects.create(task_deal=deal)
             message = "Deal Accepted"
-        
+            # TODO send notification congrats
         if serializer.validated_data.get('is_accepted') == False:
-            # TODO send notification rejected
             message = "Deal Rejected"
+            # TODO send notification rejected
         
         serializer.save()
         return Response({"detail": _(str(message))})

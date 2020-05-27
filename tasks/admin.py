@@ -1,14 +1,16 @@
 from django.contrib import admin
 from modeltranslation.admin import TranslationAdmin
 
-from .models import Category, Task
+from .models import Category, Task, TaskDeal
 
+@admin.register(Category)
 class CategoryAdmin(TranslationAdmin):
     pass
 
-
+@admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
     pass
 
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Task, TaskAdmin)
+@admin.register(TaskDeal)
+class TaskDealAdmin(admin.ModelAdmin):
+    pass

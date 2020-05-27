@@ -31,7 +31,7 @@ class TaskLocationSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    task_poster = serializers.PrimaryKeyRelatedField(read_only=True, required=False)
+    client = serializers.PrimaryKeyRelatedField(read_only=True, required=False)
     size_value = serializers.SerializerMethodField(read_only=True, required=False)
     status_value = serializers.SerializerMethodField(read_only=True, required=False)
     location = TaskLocationSerializer(read_only=True, required=False)
@@ -50,7 +50,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class TaskMiniSerializer(WritableNestedModelSerializer):
     location = TaskLocationSerializer()
-    task_poster = serializers.PrimaryKeyRelatedField(read_only=True, required=False)
+    client = serializers.PrimaryKeyRelatedField(read_only=True, required=False)
 
     class Meta:
         model = models.Task
@@ -58,7 +58,7 @@ class TaskMiniSerializer(WritableNestedModelSerializer):
 
     def save(self):
         request = self.context.get("request")
-        self.validated_data["task_poster"] = request.user
+        self.validated_data["client"] = request.user
         return super(TaskMiniSerializer, self).save()
 
 

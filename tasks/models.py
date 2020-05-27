@@ -66,7 +66,7 @@ class Task(TimeStampedModel):
         ("l", _("Large")),
     )
 
-    task_poster = models.ForeignKey(
+    client = models.ForeignKey(
         User, related_name="client", on_delete=models.CASCADE
     )
     category = models.ForeignKey(
